@@ -3,7 +3,7 @@ from imdbpie import Imdb
 from oauth2client.service_account import ServiceAccountCredentials
 #Authenticates the app with google
 scope = "https://spreadsheets.google.com/feeds"
-credentials = ServiceAccountCredentials.from_json_keyfile_name('movie-bb84a46e9f23.json', scope)
+credentials = ServiceAccountCredentials.from_json_keyfile_name('key.json', scope)
 gs = gspread.authorize(credentials)
 
 def readSheet(sheet, person, gColumn, rColumn, start, end, Tcolumn):
