@@ -1,5 +1,4 @@
 import gspread
-import decimal
 from imdbpie import Imdb
 from oauth2client.service_account import ServiceAccountCredentials
 #Authenticates the app with google
