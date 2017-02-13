@@ -1,4 +1,5 @@
 import gspread
+import decimal
 from imdbpie import Imdb
 from oauth2client.service_account import ServiceAccountCredentials
 #Authenticates the app with google
@@ -8,7 +9,7 @@ gs = gspread.authorize(credentials)
 comma = ', '
 
 def directory():
-	sheetName = 'experiment'
+	sheetName = 'Movie Tracker'
 	gsheet = gs.open(sheetName)
 	#cList = ['Collin', 2, 3, 6]
 	#mList = ['Molly', 4, 5, 6]
@@ -43,12 +44,12 @@ def readSheet(gsheet, sheet, start, end):
 	currentSheet = gsheet.worksheet(sheet)
 	columnTitles = currentSheet.row_values(1)
 	movieTitle = columnTitles.index('Title') + 1
-	Tcolumn = columnTitles.index('') + 1
+	tColumn = columnTitles.index('') + 1
 	gColumn = columnTitles.index('Genre') + 1
 	rColumn = columnTitles.index('Runtime') + 1
 	#Starts on right number, ends one less than stated
-	for x in range(start, end+1):
-		currentSheet.update_cell(x, Tcolumn, 'X')
+	for x in range(start, end + 1):
+		currentSheet.update_cell(x, tColumn, 'X')
 		#Grabs movie title
 		movie = currentSheet.cell(x, movieTitle).value
 		try:
@@ -62,22 +63,27 @@ def readSheet(gsheet, sheet, start, end):
 			print (str(c) + " at row " + str(x))
 			#if it fucks up it owns up to it
 			currentSheet.update_cell(x, gColumn, 'fucked up')
-		currentSheet.update_cell(x, Tcolumn, '')
+		currentSheet.update_cell(x, tColumn, '')
 
 def time(gsheet, sheet):
-	gsheet = gs.open(sheet).worksheet(person)
+	currentSheet = gsheet.worksheet(sheet)
+	columnTitles = currentSheet.row_values(1)
+	rColumn = (columnTitles.index('Runtime'))
 	sum = 0
-	count = 0
-	row = gsheet.row_values(count)
-	#while row[0] != None:
-	for x in range(1,2):
-		row = gsheet.row_values(x)
+	row = currentSheet.row_values(1)
+	count = 2
+	while row[0] != '':
 		try:
-			timeM = row[Rcolumn]
-			sum += (timeM.split()[0])*60
+			print ('current Row: ' + str(count))
+			row = currentSheet.row_values(count)
+			timeM = row[rColumn]
+			if (timeM == '' or timeM == 'N/A'):
+				pass
+			else:
+				sum += float((timeM.split()[0]))
 			count += 1
-			print (sum)
 		except Exception as error:
-			print (error)
-			pass
+			print (str(error) + ' at row ' + str(count))
+	print (str(((sum/60)/24)) + ' days of watching movies')
+	quit()
 directory()
