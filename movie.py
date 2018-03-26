@@ -10,8 +10,6 @@ comma = ', '
 def directory():
 	sheetName = 'Movie Tracker'
 	gsheet = gs.open(sheetName)
-	#cList = ['Collin', 2, 3, 6]
-	#mList = ['Molly', 4, 5, 6]
 	tempSheets = gsheet.worksheets()
 	sheets = []
 	for x in tempSheets:
@@ -54,10 +52,12 @@ def readSheet(gsheet, sheet, start, end):
 		try:
 			#Searches for the movie on OMDB
 			baseInfo = Imdb().search_for_title(movie)
-			search = Imdb().get_title_by_id(baseInfo[0]['imdb_id'])
+			search = baseInfo[0]['imdb_id']
+			genre = Imdb().get_title_genres(search)["genres"]
+			runtime = (Imdb().get_title(search))["base"]["runningTimeInMinutes"]
 			#Updates cells with genre and runtime
-			currentSheet.update_cell(x, gColumn, comma.join(search.genres))
-			currentSheet.update_cell(x, rColumn, str(int(search.runtime/60)) + ' min')
+			currentSheet.update_cell(x, gColumn, comma.join(genre))
+			currentSheet.update_cell(x, rColumn, str(runtime) + ' min')
 		except Exception as c:
 			print (str(c) + " at row " + str(x))
 			#if it fucks up it owns up to it
