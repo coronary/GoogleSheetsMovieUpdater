@@ -2,16 +2,14 @@ import gspread
 from imdbpie import Imdb
 from oauth2client.service_account import ServiceAccountCredentials
 #Authenticates the app with google
+comma = ', '
+
+#def spreadAuth():
 scope = "https://spreadsheets.google.com/feeds"
 credentials = ServiceAccountCredentials.from_json_keyfile_name('key.json', scope)
 gs = gspread.authorize(credentials)
-comma = ', '
 
-def directory():
-	sheetName = 'Movie Tracker'
-	gsheet = gs.open(sheetName)
-	#cList = ['Collin', 2, 3, 6]
-	#mList = ['Molly', 4, 5, 6]
+def sheetChoose(gsheet):
 	tempSheets = gsheet.worksheets()
 	sheets = []
 	for x in tempSheets:
@@ -26,9 +24,9 @@ def directory():
 		except Exception as c:
 			print (c)
 			print ('Must be a valid index between 0 and ' + str(len(sheets)))
-	choice = int(input('movie update(1), days watching movies(2): '))
-	if choice == 2:
-		time(gsheet, sheets[sheet])
+	return sheet
+
+def rowAsk():
 	while True:
 		try:
 			start = int(input('Starting row: '))
@@ -36,7 +34,20 @@ def directory():
 			break
 		except:
 			print ('Must both be integers')
-	readSheet(gsheet, sheets[sheet], start, end)
+	return (start, end)
+
+def directory():
+	sheetName = 'Movie Tracker'
+	#gs = spreadAuth()
+	gsheet = gs.open(sheetName)
+	sheet = sheetChoose(gsheet)
+
+	choice = int(input('movie update(1), days watching movies(2): '))
+	if choice == 2:
+		time(gsheet, sheets[sheet])
+	else:
+		start, end = rowAsk()
+		readSheet(gsheet, sheets[sheet], start, end)
 
 def readSheet(gsheet, sheet, start, end):
 	#opens movie spreadsheet
@@ -85,4 +96,5 @@ def time(gsheet, sheet):
 			print (str(error) + ' at row ' + str(count))
 	print (str(((sum/60)/24)) + ' days of watching movies')
 	quit()
+
 directory()
