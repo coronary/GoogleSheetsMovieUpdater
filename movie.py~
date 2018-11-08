@@ -1,19 +1,14 @@
 import gspread
-#from imdbpie import Imdb
-import imdb
+from imdbpie import Imdb
 from oauth2client.service_account import ServiceAccountCredentials
 #Authenticates the app with google
+comma = ', '
 
 #def spreadAuth():
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 credentials = ServiceAccountCredentials.from_json_keyfile_name('newKey.json', scope)
 gs = gspread.authorize(credentials)
 
-imdb = imdb.IMDb()
-
-
-#print((imdb.get_title(imdb.search_for_title("Suspiria")[0]['imdb_id'])["soundtrack"]))
-#print(dir(imdb))
 def sheetChoose(gsheet):
 	tempSheets = gsheet.worksheets()
 	sheets = []
@@ -21,7 +16,7 @@ def sheetChoose(gsheet):
 		sheets.append(x.title)
 	while True:
 		try:
-			print (", ".join(sheets))
+			print (comma.join(sheets))
 			sheet = int(input('Choose the index of the sheet you want '))
 			if sheet >= len(sheets):
 				raise IndexError
@@ -29,7 +24,7 @@ def sheetChoose(gsheet):
 		except Exception as c:
 			print (c)
 			print ('Must be a valid index between 0 and ' + str(len(sheets)))
-	return sheets[sheet]
+	return sheet
 
 def rowAsk():
 	while True:
@@ -50,41 +45,36 @@ def directory():
 
 	choice = int(input('movie update(1), days watching movies(2): '))
 	if choice == 2:
-		time(gsheet, sheet)
+		time(gsheet, sheets[sheet])
 	else:
 		start, end = rowAsk()
-		readSheet(gsheet, sheet, start, end)
+		readSheet(gsheet, sheets[sheet], start, end)
 
 def readSheet(gsheet, sheet, start, end):
 	#opens movie spreadsheet
 	currentSheet = gsheet.worksheet(sheet)
 	columnTitles = currentSheet.row_values(1)
 	movieTitle = columnTitles.index('Title') + 1
-	tColumn = columnTitles.index('Runtime') + 1
+	tColumn = columnTitles.index('') + 1
 	gColumn = columnTitles.index('Genre') + 1
 	rColumn = columnTitles.index('Runtime') + 1
 	#Starts on right number, ends one less than stated
-
 	for x in range(start, end + 1):
 		currentSheet.update_cell(x, tColumn, 'X')
 		#Grabs movie title
 		movie = currentSheet.cell(x, movieTitle).value
 		try:
-			#(imdb.get_movie(mov[0].movieID)["genre"])
 			#Searches for the movie on OMDB
-
-			baseInfo = imdb.search_movie(movie)[0].movieID
-			search = imdb.get_movie(baseInfo)
-
+			baseInfo = Imdb().search_for_title(movie)
+			search = Imdb().get_title_by_id(baseInfo[0]['imdb_id'])
 			#Updates cells with genre and runtime
-			currentSheet.update_cell(x, gColumn, ", ".join(search["genres"]))
-			currentSheet.update_cell(x, rColumn, str(int(search["runtimes"][0])) + ' min')
+			currentSheet.update_cell(x, gColumn, comma.join(search.genres))
+			currentSheet.update_cell(x, rColumn, str(int(search.runtime/60)) + ' min')
 		except Exception as c:
 			print (str(c) + " at row " + str(x))
 			#if it fucks up it owns up to it
 			currentSheet.update_cell(x, gColumn, 'fucked up')
-			currentSheet.update_cell(x, rColumn, '')
-		#currentSheet.update_cell(x, tColumn, '')
+		currentSheet.update_cell(x, tColumn, '')
 
 def time(gsheet, sheet):
 	currentSheet = gsheet.worksheet(sheet)
